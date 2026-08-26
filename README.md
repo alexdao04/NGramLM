@@ -1,6 +1,40 @@
 # LING 144 N-Gram Language Model
-# Final Project for Summer 2026
-# Author: Alexander Dao
+*Author: Alexander Dao*<br>
 
-This will be filled in later. Initial setup pending <br>
-- AD
+Generates text using n-gram models trained on a Wikipedia article or text file.<br>
+The original Jupyter notebook for which this is based on is in the "references" folder.<br>
+
+## Setup
+
+```bash
+python -m venv dependencies
+source dependencies/bin/activate
+pip install -r requirements.txt
+```
+
+## Usage
+
+Generate text from a Wikipedia article:
+
+```bash
+python -m backend.experiment --article Google --n 2 3 4
+```
+
+Generate text from a local file:
+
+```bash
+python -m backend.experiment --file corpus.txt --n 2 3 4
+```
+
+Useful options:
+
+- `--n 2 3 4`: n-gram window sizes to compare
+- `--tokens 100`: number of tokens to generate
+- `--start the search`: starting words
+- `--seed 6`: random seed for repeatable output
+
+## Tests
+
+```bash
+python tests/test_backend.py
+```

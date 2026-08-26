@@ -1,44 +1,53 @@
-from collections import Counter, defaultdict
 import random
 import re
-import requests
-import spacy
+from typing import Sequence
 
-def weighted_choice(counter):
-    choices = list(counter.keys())
-    weights = list(counter.values())
-    return random.choices(choices, weights=weights, k=1)[0]
+from .model import NGramModel
 
-def generate_tokens(model, n, number_of_tokens, start=()):
-    start = tuple(word.lower() for word in start)
 
-    if len(start) >= n - 1:
-        generated = list(start)
+def generate_tokens(
+    model: NGramModel,
+    number_of_tokens: int,
+    *,
+    start: Sequence[str] = (),
+    seed: int | None = None,
+) -> list[str]:
+    if number_of_tokens < 0:
+        raise ValueError("number_of_tokens cannot be negative")
+    if model.n < 1 or not model.counts:
+        raise ValueError("model must be a non-empty n-gram model")
+
+    rng = random.Random(seed)
+    history_size = model.n - 1
+    supplied = tuple(word.lower() for word in start)
+    if history_size == 0 or len(supplied) >= history_size:
+        generated = list(supplied)
     else:
-        possible_contexts = [context for context in model if context[:len(start)] == start]
-        if not possible_contexts:
-            raise ValueError("Those starting words do not occur as a context in this book.")
-        generated = list(random.choice(possible_contexts))
+        possible = [
+            context
+            for context in model.counts
+            if context[:len(supplied)] == supplied
+        ]
+        if not possible:
+            raise ValueError("Starting words do not occur as a model context")
+        generated = list(rng.choice(possible))
 
     while len(generated) < number_of_tokens:
-        context = tuple(generated[-(n - 1):])
-        choices = model.get(context)
-
-        # A context at the very end of the book may have no continuation.
-        # In that rare case, begin again from another context of the same model.
-        if not choices:
-            restart = random.choice(list(model.keys()))
-            generated.extend(restart)
+        context = tuple(generated[-history_size:]) if history_size else ()
+        choices = model.counts.get(context)
+        if choices:
+            generated.append(
+                rng.choices(list(choices), weights=choices.values(), k=1)[0]
+            )
         else:
-            generated.append(weighted_choice(choices))
-
+            generated.extend(rng.choice(list(model.counts)))
     return generated[:number_of_tokens]
 
-def untokenize(tokens):
-    # Join tokens, then remove spaces before common punctuation.
+
+def untokenize(tokens: Sequence[str]) -> str:
+    """Join tokens and correct punctuation spacing."""
     text = " ".join(tokens)
     text = re.sub(r"\s+([.,!?;:%\)\]’])", r"\1", text)
     text = re.sub(r"([\(\[‘])\s+", r"\1", text)
     text = re.sub(r"\s+(['’])\s+", r"\1", text)
     return text
-

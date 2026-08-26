@@ -19,31 +19,39 @@ class NGramModelTests(unittest.TestCase):
         self.tokens = "one fish two fish red fish blue fish".split()
 
     def test_unigram_uses_empty_context(self):
-        self.assertEqual(build_ngram_model(self.tokens, 1)[()], Counter(self.tokens))
+        counts = build_ngram_model(self.tokens, 1)[()]
+        print(f"\n[unigram] counts={dict(counts)}")
+        self.assertEqual(counts, Counter(self.tokens))
 
     def test_bigram_counts_all_continuations(self):
         model = build_ngram_model(self.tokens, 2)
+        print(f"\n[bigram] after 'fish'={dict(model[('fish',)])}")
         self.assertEqual(model[("fish",)], Counter({"two": 1, "red": 1, "blue": 1}))
 
     def test_arbitrary_window(self):
         model = NGramModel.train(self.tokens, 5)
+        print(f"\n[5-gram] contexts={model.context_count}")
         self.assertEqual(model.n, 5)
         self.assertEqual(model.context_count, 4)
 
     def test_seed_makes_generation_repeatable(self):
         model = NGramModel.train(self.tokens, 3)
         first = generate_tokens(model, 20, seed=7)
+        print(f"\n[generation] seed=7 tokens={' '.join(first)}")
         self.assertEqual(first, generate_tokens(model, 20, seed=7))
         self.assertEqual(len(first), 20)
 
     def test_invalid_window_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as error:
             build_ngram_model(self.tokens, 0)
+        print(f"\n[validation] error={error.exception}")
 
 
 class TokenizerTests(unittest.TestCase):
     def test_lowercases_and_removes_punctuation(self):
-        self.assertEqual(tokenize("Hello, N-Grams!"), ["hello", "n", "grams"])
+        tokens = tokenize("Hello, N-Grams!")
+        print(f"\n[tokenizer] tokens={tokens}")
+        self.assertEqual(tokens, ["hello", "n", "grams"])
 
 
 if __name__ == "__main__":

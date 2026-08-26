@@ -1,4 +1,4 @@
-# LING 144 N-Gram Language Model
+# N-Gram Language Model Project
 *Author: Alexander Dao*<br>
 
 Generates text using n-gram models trained on a Wikipedia article or text file.<br>
@@ -17,13 +17,13 @@ pip install -r requirements.txt
 Generate text from a Wikipedia article:
 
 ```bash
-python -m backend.experiment --article Google --n 2 3 4
+python -m backend.experiment --article Google --n <int>
 ```
 
 Generate text from a local file:
 
 ```bash
-python -m backend.experiment --file corpus.txt --n 2 3 4
+python -m backend.experiment --file corpus.txt --n <int>
 ```
 
 Useful options:
@@ -35,6 +35,18 @@ Useful options:
 
 ## Tests
 
+Run the tests in verbose mode to verify that model training, text generation,
+validation, and tokenization work:
+
 ```bash
-python tests/test_backend.py
+python tests/test_backend.py -v
+```
+
+The tests print debugging details such as learned counts, generated tokens, and
+tokenizer output. Everything is working when all tests end with:
+
+```text
+Ran 6 tests
+
+OK
 ```

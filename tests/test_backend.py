@@ -1,5 +1,3 @@
-"""Tests for model training, generation, and tokenization."""
-
 import unittest
 from collections import Counter
 from pathlib import Path
@@ -40,6 +38,26 @@ class NGramModelTests(unittest.TestCase):
         print(f"\n[generation] seed=7 tokens={' '.join(first)}")
         self.assertEqual(first, generate_tokens(model, 20, seed=7))
         self.assertEqual(len(first), 20)
+
+    def test_missing_context_backs_off_to_shorter_context(self):
+        tokens = "alpha hinge expected beta hinge expected gamma hinge expected".split()
+        model = NGramModel.train(tokens, 3)
+
+        # the pair is unseen, but "hinge" always continues with "expected"
+        trials = 50
+        correct = 0
+        for seed in range(trials):
+            generated = generate_tokens(
+                model,
+                3,
+                start=("unknown", "hinge"),
+                seed=seed,
+            )
+            correct += generated[-1] == "expected"
+
+        accuracy = correct / trials
+        print(f"\n[backoff] shorter-context accuracy={accuracy:.0%}")
+        self.assertEqual(accuracy, 1.0)
 
     def test_invalid_window_is_rejected(self):
         with self.assertRaises(ValueError) as error:

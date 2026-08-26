@@ -46,7 +46,7 @@ The tests print debugging details such as learned counts, generated tokens, and
 tokenizer output. Everything is working when all tests end with:
 
 ```text
-Ran 6 tests
+Ran 7 tests
 
 OK
 ```

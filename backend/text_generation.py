@@ -2,6 +2,7 @@ import random
 import re
 from typing import Sequence
 
+from .backoff import backoff
 from .model import NGramModel
 
 
@@ -19,10 +20,12 @@ def generate_tokens(
 
     rng = random.Random(seed)
     history_size = model.n - 1
+    # starting words are normalized to match the lowercase training tokens
     supplied = tuple(word.lower() for word in start)
     if history_size == 0 or len(supplied) >= history_size:
         generated = list(supplied)
     else:
+        # complete a short start by finding contexts with the same prefix
         possible = [
             context
             for context in model.counts
@@ -33,14 +36,16 @@ def generate_tokens(
         generated = list(rng.choice(possible))
 
     while len(generated) < number_of_tokens:
+        # use the most recent n - 1 tokens to find possible next tokens
         context = tuple(generated[-history_size:]) if history_size else ()
-        choices = model.counts.get(context)
-        if choices:
-            generated.append(
-                rng.choices(list(choices), weights=choices.values(), k=1)[0]
-            )
-        else:
-            generated.extend(rng.choice(list(model.counts)))
+        choices = backoff(model.counts_by_context_length, context)
+        if not choices:
+            raise ValueError("model has no available continuation")
+
+        # corpus counts act as weights, so common continuations are more likely
+        generated.append(
+            rng.choices(list(choices), weights=choices.values(), k=1)[0]
+        )
     return generated[:number_of_tokens]
 
 

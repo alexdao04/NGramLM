@@ -22,9 +22,11 @@ def main() -> None:
     args = parse_args()
     if any(n < 1 for n in args.n):
         raise SystemExit("Every --n value must be at least 1")
+    # load and clean the corpus once so each model uses the same tokens
     text = read_text(args.file) if args.file else fetch_wikipedia_article(args.article)
     corpus_tokens = tokenize(text)
     print(f"Corpus: {len(corpus_tokens):,} tokens")
+    # train and generate separately for every requested n-gram size
     for n in args.n:
         model = NGramModel.train(corpus_tokens, n)
         generated = generate_tokens(model, args.tokens, start=args.start, seed=args.seed)

@@ -1,3 +1,8 @@
 **/__pycache__/
 *.pyc
+.env
+# we dont have an env file here but im doing it just because
+venv/
+# by default i blocked this out too if you just name your venv "venv"
 dependencies/
+# this is what i named my venv/dependency folder but you do you

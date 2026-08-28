@@ -2,7 +2,7 @@ import random
 import re
 from typing import Sequence
 
-from .backoff import backoff
+from .backoff import stupid_backoff
 from .model import NGramModel
 
 
@@ -38,7 +38,7 @@ def generate_tokens(
     while len(generated) < number_of_tokens:
         # use the most recent n - 1 tokens to find possible next tokens
         context = tuple(generated[-history_size:]) if history_size else ()
-        choices = backoff(model.counts_by_context_length, context)
+        choices = stupid_backoff(model.counts_by_context_length, context)
         if not choices:
             raise ValueError("model has no available continuation")
 

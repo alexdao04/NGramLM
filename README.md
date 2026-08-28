@@ -41,12 +41,3 @@ validation, and tokenization work:
 ```bash
 python tests/test_backend.py -v
 ```
-
-The tests print debugging details such as learned counts, generated tokens, and
-tokenizer output. Everything is working when all tests end with:
-
-```text
-Ran 7 tests
-
-OK
-```
